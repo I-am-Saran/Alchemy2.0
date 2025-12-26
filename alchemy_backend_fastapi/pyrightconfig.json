@@ -1,0 +1,17 @@
+{
+  "typeCheckingMode": "basic",
+  "exclude": [
+    "**/__pycache__",
+    "venv",
+    ".venv",
+    "node_modules",
+    "main.py"
+  ],
+  "reportGeneralTypeIssues": "none",
+  "reportOptionalMemberAccess": "none",
+  "reportOptionalSubscript": "none",
+  "reportOptionalCall": "none",
+  "reportOptionalIterable": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none"
+}

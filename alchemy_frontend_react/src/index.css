@@ -1,0 +1,331 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================
+   Base glossy styles per AIG
+   ========================= */
+html, body { 
+  height: 100vh; 
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+#root {
+  height: 111.11vh; /* 100vh / 0.9 to compensate for scale */
+  width: 111.11vw; /* 100vw / 0.9 to compensate for scale */
+  transform: scale(0.9);
+  transform-origin: top left;
+  overflow: hidden;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* Copper palette-inspired subtle gradient background */
+  background: linear-gradient(180deg, #F8F9FA 0%, #F0F2F5 100%);
+  color: #8b6b4a;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Utility: frosted glass panel */
+.glass-panel {
+  /* Copper palette card with subtle blue/cyan shadow */
+  @apply bg-card rounded-xl border border-accent/40 shadow-md;
+  box-shadow: 0 10px 24px rgba(45, 90, 143, 0.12);
+}
+
+/* Utility: trendy subtle animated gradient overlay for cards */
+.trend-card {
+  position: relative;
+  overflow: hidden;
+}
+.trend-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(135deg, rgba(45, 90, 143, 0.12), rgba(90, 155, 168, 0.10));
+  background-size: 180% 180%;
+  opacity: 0.15;
+  transition: opacity 300ms ease, transform 400ms ease;
+  pointer-events: none;
+  z-index: 0;
+  animation: cardGradientShift 9s ease-in-out infinite alternate;
+}
+.trend-card:hover::before {
+  opacity: 0.26;
+  transform: scale(1.02);
+}
+.trend-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes cardGradientShift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 50% 100%; }
+  100% { background-position: 100% 0%; }
+}
+
+/* Utility: glossy button glow */
+.btn-glow {
+  /* Soft subtle blue/cyan-tinted shadow with subtle lift */
+  box-shadow: 0 4px 10px rgba(45, 90, 143, 0.18), inset 0 1px 0 rgba(255,255,255,0.45);
+  transition: transform 150ms ease, box-shadow 200ms ease, filter 200ms ease;
+}
+.btn-glow:hover {
+  box-shadow: 0 8px 18px rgba(90, 155, 168, 0.25), inset 0 1px 0 rgba(255,255,255,0.65);
+  transform: translateY(-1px);
+  filter: saturate(102%);
+}
+
+/* Utility: glossy overlay for buttons (soft highlight line) */
+.btn-gloss {
+  position: relative;
+  overflow: hidden;
+}
+.btn-gloss::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.25) 35%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  opacity: 0.25;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.btn-gloss:hover::after {
+  opacity: 0.45;
+}
+
+/* ===========================
+   Transtracker Table & Form Fix
+   =========================== */
+
+/* Table headers visibility and style */
+table th {
+  background-color: #F0F4F6; /* Light subtle cyan-tinted background to contrast text */
+  color: #2d5a8f; /* SOFT BLUE - Primary dark text */
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid #5a9ba8; /* MUTED CYAN border */
+}
+
+/* Table cells */
+table td {
+  padding: 0.5rem 0.75rem;
+  color: #8b6b4a; /* MUTED COPPER */
+}
+
+/* Table hover row effect */
+table tbody tr:hover {
+  background-color: #F8F9FA; /* Light neutral background */
+}
+
+/* Make GlossyButton visible inside table */
+table button {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+/* Apply your glossy style to buttons inside table */
+table button.btn-glow {
+  box-shadow: 0 4px 10px rgba(45, 90, 143, 0.18), inset 0 1px 0 rgba(255,255,255,0.45);
+}
+table button.btn-glow:hover {
+  box-shadow: 0 8px 18px rgba(90, 155, 168, 0.25), inset 0 1px 0 rgba(255,255,255,0.65);
+  transform: translateY(-1px);
+  filter: saturate(102%);
+}
+
+/* Form inputs visibility */
+form input, form select, form textarea {
+  background-color: #FFFFFF; /* White background */
+  border: 1px solid #5a9ba8; /* MUTED CYAN border */
+  color: #8b6b4a; /* MUTED COPPER text */
+  padding: 0.5rem;
+  border-radius: 0.375rem; /* Rounded edges match your theme */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Form input focus state */
+form input:focus, form select:focus, form textarea:focus {
+  outline: 2px solid rgba(90, 155, 168, 0.4); /* subtle muted cyan glow on focus */
+  outline-offset: 2px;
+}
+
+/* DataTable overflow and responsive fixes */
+.rdt_Table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.rdt_TableWrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+.rdt_TableRow {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 48px !important;
+}
+
+.rdt_TableBody .rdt_TableRow {
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+}
+
+.rdt_TableHeadRow {
+  width: 100% !important;
+}
+
+/* Ensure table cells don't cause horizontal overflow */
+.rdt_TableCell {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-wrap: break-word !important;
+  max-width: 100% !important;
+  padding: 0.5rem 0.75rem !important;
+  white-space: nowrap !important;
+  height: auto !important;
+  min-height: 48px !important;
+  vertical-align: middle !important;
+}
+
+.rdt_TableHeadCell {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-wrap: break-word !important;
+  max-width: 100% !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+/* Created At column can wrap for date/time display */
+.rdt_TableCell[data-column="created_at"] {
+  white-space: normal !important;
+}
+
+/* Remove right padding from S.No column (first column) */
+.rdt_TableHeadRow .rdt_TableHeadCell:first-child,
+.rdt_TableBody .rdt_TableRow .rdt_TableCell:first-child {
+  padding-right: 0 !important;
+}
+
+/* Prevent any horizontal scrollbars */
+.rdt_TableContainer {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Modal background layering fix */
+.fixed.inset-0 {
+  z-index: 9999; /* ensures modal appears above everything */
+}
+
+/* ===========================
+   Home Page Animations
+   =========================== */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-fade-in-up.delay-100 {
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
+}
+
+.animate-fade-in-up.delay-200 {
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+}
+
+/* ===========================
+   Loader Animations
+   =========================== */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes draw {
+  0% {
+    stroke-dasharray: 0 300;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 150 300;
+    stroke-dashoffset: -75;
+  }
+  100% {
+    stroke-dasharray: 300 300;
+    stroke-dashoffset: -300;
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-draw {
+  animation: draw 2s ease-in-out infinite;
+}

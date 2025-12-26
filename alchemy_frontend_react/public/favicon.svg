@@ -1,0 +1,21 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#683B2B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B08401;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="qaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background with rounded corners -->
+  <rect width="32" height="32" rx="6" fill="url(#shieldGradient)"/>
+  <!-- Shield icon (simplified for small size) -->
+  <path d="M16 4L6 8v8c0 5 3.5 9.5 8 11.5L16 28l2-1.5c4.5-2 8-6.5 8-11.5V8l-10-4z" fill="white" opacity="0.95"/>
+  <path d="M16 6L8 9v7c0 4 2.5 7.5 6 9L16 26l2-1c3.5-1.5 6-5 6-9V9l-8-3z" fill="url(#shieldGradient)"/>
+  <!-- QA badge circle in top right -->
+  <circle cx="24" cy="8" r="5" fill="url(#qaGradient)"/>
+  <path d="M21.5 8l1.5 1.5 3.5-3.5" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
