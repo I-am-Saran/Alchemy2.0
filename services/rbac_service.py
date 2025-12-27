@@ -5,9 +5,7 @@ Handles roles, permissions, and user-role assignments
 
 from typing import Optional, List, Dict, Any, Tuple
 from datetime import datetime, timezone
-# COMMENTED OUT FOR LOCAL DEVELOPMENT - Using local PostgreSQL instead
-# from services.supabase_client import supabase
-from services.db_service import local_db as supabase  # Use local DB service
+from services.supabase_client import supabase
 import uuid
 
 

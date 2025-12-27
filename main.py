@@ -6,9 +6,7 @@ from fastapi import FastAPI, HTTPException, Request, Header, Query, File, Upload
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-# COMMENTED OUT FOR LOCAL DEVELOPMENT - Using local PostgreSQL instead
-# from services.supabase_client import supabase
-from services.db_service import local_db as supabase  # Use local DB service
+from services.supabase_client import supabase
 from services.formatters import normalize_control, normalize_control_list, normalize_action
 from services.auth_service import authenticate_user, verify_jwt_token, get_user_from_token, verify_password, validate_password_strength
 from services.rbac_service import (
@@ -4393,66 +4391,27 @@ async def change_password(
     """
     endpoint = "/api/auth/change-password"
     try:
-        # Get user from token
         if not Authorization or not Authorization.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="Missing or invalid authorization token")
-        
         token = Authorization.replace("Bearer ", "")
         user_info = get_user_from_token(token)
-        
         if not user_info:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
-        
         user_id = user_info["user_id"]
-        
-        # Validate new password strength
         is_valid, error_msg = validate_password_strength(payload.new_password)
         if not is_valid:
             raise HTTPException(status_code=400, detail=error_msg)
-        
-        # Verify current password and update to new password
-        import psycopg2
-        from config import DB_URL
-        
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        
-        # Get current password hash
-        cur.execute("SELECT password FROM users WHERE id = %s", (user_id,))
-        row = cur.fetchone()
-        
-        if not row:
-            conn.close()
+        resp = supabase.table("users").select("password").eq("id", user_id).limit(1).execute()
+        if not resp.data:
             raise HTTPException(status_code=404, detail="User not found")
-        
-        current_hashed_password = row[0]
-        
-        # Verify current password
+        current_hashed_password = resp.data[0].get("password")
         if not verify_password(payload.current_password, current_hashed_password):
-            conn.close()
             raise HTTPException(status_code=400, detail="Current password is incorrect")
-        
-        # Check if new password is same as current password
         if verify_password(payload.new_password, current_hashed_password):
-            conn.close()
             raise HTTPException(status_code=400, detail="New password must be different from current password")
-        
-        # Update password
         new_hashed_password = hash_password(payload.new_password)
-        cur.execute(
-            "UPDATE users SET password = %s, updated_at = NOW() WHERE id = %s",
-            (new_hashed_password, user_id)
-        )
-        conn.commit()
-        conn.close()
-        
-        return {
-            "data": {
-                "message": "Password changed successfully",
-                "password_changed": True
-            },
-            "error": None
-        }
+        supabase.table("users").update({"password": new_hashed_password, "updated_at": datetime.utcnow().isoformat()}).eq("id", user_id).execute()
+        return {"data": {"message": "Password changed successfully", "password_changed": True}, "error": None}
     except HTTPException:
         raise
     except Exception as e:
@@ -4469,47 +4428,23 @@ async def check_password_change(
     """
     endpoint = "/api/auth/check-password-change"
     try:
-        # Get user from token
         if not Authorization or not Authorization.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="Missing or invalid authorization token")
-        
         token = Authorization.replace("Bearer ", "")
         user_info = get_user_from_token(token)
-        
         if not user_info:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
-        
         user_id = user_info["user_id"]
-        
-        # Check if password is default or first login
-        import psycopg2
-        from config import DB_URL
-        
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        
-        cur.execute(
-            "SELECT password, first_login, last_login FROM users WHERE id = %s",
-            (user_id,)
-        )
-        row = cur.fetchone()
-        conn.close()
-        
-        if not row:
+        resp = supabase.table("users").select("password,first_login,last_login").eq("id", user_id).limit(1).execute()
+        if not resp.data:
             raise HTTPException(status_code=404, detail="User not found")
-        
-        hashed_password, first_login, last_login = row
-        
-        # Check if password is default "pass" or first login
+        row = resp.data[0]
+        hashed_password = row.get("password")
+        first_login = row.get("first_login")
+        last_login = row.get("last_login")
         is_default_password = verify_password("pass", hashed_password)
         is_first_time = is_default_password or (first_login is None) or (first_login == last_login)
-        
-        return {
-            "data": {
-                "requires_password_change": is_first_time
-            },
-            "error": None
-        }
+        return {"data": {"requires_password_change": is_first_time}, "error": None}
     except HTTPException:
         raise
     except Exception as e:

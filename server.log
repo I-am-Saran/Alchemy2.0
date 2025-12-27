@@ -1,0 +1,2 @@
+2025-12-27 17:41:56,488 - httpx - INFO - HTTP Request: GET https://tkasqkecqamwhpunoboe.supabase.co/rest/v1/users?select=id%2Cemail%2Cfull_name%2Cpassword%2Ctenant_id%2Cis_active%2Cfirst_login%2Clast_login%2Clogin_count&email=ilike.qa.admin%40alchemy.local&limit=1 "HTTP/2 200 OK"
+2025-12-27 17:44:01,206 - httpx - INFO - HTTP Request: GET https://tkasqkecqamwhpunoboe.supabase.co/rest/v1/users?select=id%2Cemail%2Cfull_name%2Cpassword%2Ctenant_id%2Cis_active%2Cfirst_login%2Clast_login%2Clogin_count&email=ilike.qa.admin%40alchemy.local&limit=1 "HTTP/2 200 OK"

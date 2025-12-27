@@ -2,12 +2,12 @@
 Authentication Service - JWT-based authentication
 """
 
-import jwt  # PyJWT library
+import jwt
 import bcrypt
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, Tuple
-import psycopg2
-from config import DB_URL, JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRATION_HOURS
+from config import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRATION_HOURS
+from services.supabase_client import supabase
 
 
 def hash_password(password: str) -> str:
@@ -87,64 +87,48 @@ def authenticate_user(email: str, password: str) -> Optional[Dict[str, Any]]:
         Dict with error key if user is inactive
     """
     try:
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        
-        # Get user by email (case-insensitive) - also get first_login and last_login
-        cur.execute(
-            "SELECT id, email, full_name, password, tenant_id, is_active, first_login, last_login FROM users WHERE LOWER(email) = LOWER(%s)",
-            (email,)
+        resp = (
+            supabase
+            .table("users")
+            .select("id,email,full_name,password,tenant_id,is_active,first_login,last_login,login_count")
+            .ilike("email", email.strip().lower())
+            .limit(1)
+            .execute()
         )
-        user_row = cur.fetchone()
-        
-        if not user_row:
-            conn.close()
+        if not resp.data:
             print(f"[authenticate_user] User not found: {email}")
             return None
-        
-        user_id, user_email, full_name, hashed_password, tenant_id, is_active, first_login, last_login = user_row
-        
-        # Check if user is active - CRITICAL: Block inactive users from logging in
+        row = resp.data[0]
+        user_id = row.get("id")
+        user_email = row.get("email")
+        full_name = row.get("full_name")
+        hashed_password = row.get("password")
+        tenant_id = row.get("tenant_id")
+        is_active = bool(row.get("is_active", True))
+        first_login = row.get("first_login")
+        last_login = row.get("last_login")
+        login_count = row.get("login_count") or 0
+
         if not is_active:
-            conn.close()
             print(f"[authenticate_user] User is inactive: {email}")
             return {"error": "inactive", "message": "Your account is inactive. Please contact your administrator."}
-        
-        # Check if user has a password set
         if not hashed_password:
-            conn.close()
             print(f"[authenticate_user] User has no password set: {email}")
             return {"error": "no_password", "message": "No password set for this account. Please use SSO login or contact your administrator."}
-        
-        # Verify password
         if not verify_password(password, hashed_password):
-            conn.close()
             print(f"[authenticate_user] Password verification failed for: {email}")
             return None
-        
-        # Check if user is first-time user (password is default "pass" or first_login is NULL)
-        # Default password is "pass" - check if current password matches this
+
         is_default_password = verify_password("pass", hashed_password)
-        # Also check if this is their first login (first_login is NULL or equals last_login)
         is_first_time = is_default_password or (first_login is None) or (first_login == last_login)
-        
-        # Update last_login and first_login if needed
+
+        now_iso = datetime.utcnow().isoformat()
+        update_data = {"last_login": now_iso, "login_count": int(login_count) + 1}
         if first_login is None:
-            cur.execute(
-                "UPDATE users SET first_login = NOW(), last_login = NOW(), login_count = COALESCE(login_count, 0) + 1 WHERE id = %s",
-                (user_id,)
-            )
-        else:
-            cur.execute(
-                "UPDATE users SET last_login = NOW(), login_count = COALESCE(login_count, 0) + 1 WHERE id = %s",
-                (user_id,)
-            )
-        conn.commit()
-        conn.close()
-        
-        # Create JWT token
+            update_data["first_login"] = now_iso
+        supabase.table("users").update(update_data).eq("id", user_id).execute()
+
         token = create_jwt_token(user_id, user_email)
-        
         print(f"[authenticate_user] Login successful for: {email}")
         return {
             "user_id": user_id,
@@ -154,9 +138,6 @@ def authenticate_user(email: str, password: str) -> Optional[Dict[str, Any]]:
             "token": token,
             "requires_password_change": is_first_time,
         }
-    except psycopg2.Error as e:
-        print(f"[authenticate_user] Database error: {e}")
-        return None
     except Exception as e:
         print(f"[authenticate_user] Unexpected error: {e}")
         import traceback
@@ -175,26 +156,24 @@ def get_user_from_token(token: str) -> Optional[Dict[str, Any]]:
         return None
     
     try:
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        
-        cur.execute(
-            "SELECT id, email, full_name, tenant_id FROM users WHERE id = %s AND is_active = TRUE",
-            (user_id,)
+        resp = (
+            supabase
+            .table("users")
+            .select("id,email,full_name,tenant_id,is_active")
+            .eq("id", user_id)
+            .limit(1)
+            .execute()
         )
-        user_row = cur.fetchone()
-        conn.close()
-        
-        if not user_row:
+        if not resp.data:
             return None
-        
-        user_id, email, full_name, tenant_id = user_row
-        
+        row = resp.data[0]
+        if not bool(row.get("is_active", True)):
+            return None
         return {
-            "user_id": user_id,
-            "email": email,
-            "full_name": full_name,
-            "tenant_id": tenant_id or "00000000-0000-0000-0000-000000000001",
+            "user_id": row.get("id"),
+            "email": row.get("email"),
+            "full_name": row.get("full_name"),
+            "tenant_id": row.get("tenant_id") or "00000000-0000-0000-0000-000000000001",
         }
     except Exception as e:
         print(f"Error getting user from token: {e}")
