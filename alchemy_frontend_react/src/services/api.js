@@ -49,17 +49,9 @@ async function request(path, options = {}) {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const buildUrl = (base, p) => {
-      const b = (base || "").replace(/\/+$/, "");
-      const ps = (p || "");
-      const p2 = ps.startsWith("/") ? ps : `/${ps}`;
-      if (b.endsWith("/api") && p2.startsWith("/api/")) {
-        return `${b}${p2.slice(4)}`;
-      }
-      return `${b}${p2}`;
-    };
-
-    const res = await fetch(buildUrl(BASE_URL, path), {
+    const b = (BASE_URL || "").replace(/\/+$/, "");
+    const p2 = (path || "").startsWith("/") ? path : `/${path}`;
+    const res = await fetch(`${b}${p2}`, {
       headers,
       ...options,
     });
