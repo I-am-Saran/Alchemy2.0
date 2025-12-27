@@ -1,7 +1,7 @@
 // Use relative path in development (via Vite proxy) or absolute URL in production
 // In dev mode, empty string uses Vite proxy. In production, use VITE_API_BASE_URL
 const BASE_URL = import.meta.env.DEV 
-  ? (import.meta.env.VITE_API_BASE_URL || "")  // Use env var if set, otherwise use proxy
+  ? (import.meta.env.VITE_API_BASE_URL || "")
   : (import.meta.env.VITE_API_BASE_URL || "");
 
 // Global loading state management
@@ -49,7 +49,17 @@ async function request(path, options = {}) {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(`${BASE_URL}${path}`, {
+    const buildUrl = (base, p) => {
+      const b = (base || "").replace(/\/+$/, "");
+      const ps = (p || "");
+      const p2 = ps.startsWith("/") ? ps : `/${ps}`;
+      if (b.endsWith("/api") && p2.startsWith("/api/")) {
+        return `${b}${p2.slice(4)}`;
+      }
+      return `${b}${p2}`;
+    };
+
+    const res = await fetch(buildUrl(BASE_URL, path), {
       headers,
       ...options,
     });
